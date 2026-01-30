@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BreastHealth Monitor - Система мониторинга</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">🩺</div>
+                <span class="logo-text">BreastHealth</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-page="overview">
+                        <i class="fas fa-chart-pie"></i>
+                        Обзор
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="input">
+                        <i class="fas fa-edit"></i>
+                        Ввод данных
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="upload">
+                        <i class="fas fa-camera"></i>
+                        Загрузить термо
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="history">
+                        <i class="fas fa-history"></i>
+                        История
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="analysis">
+                        <i class="fas fa-brain"></i>
+                        AI Анализ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        Настройки
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="page-title">Обзор</h1>
+                <div class="header-info">
+                    <span class="date-display" id="currentDate"></span>
+                    <div class="user-avatar">ЖС</div>
+                </div>
+            </header>
+
+            <!-- Overview Page -->
+            <section id="page-overview" class="page active">
+                <div class="dashboard-grid">
+                    <!-- Thermal Visualization -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Тепловая карта в реальном времени</h2>
+                            <span class="card-badge badge-normal" id="overviewBadge">Норма</span>
+                        </div>
+                        <div class="thermal-container">
+                            <div class="thermal-zone">
+                                <div class="thermal-image" id="leftThermal" style="--peak-color: #22c55e;"></div>
+                                <span class="thermal-label">Левая грудь</span>
+                                <span class="temp-value" id="leftTemp">36.4°C</span>
+                            </div>
+                            <div class="thermal-zone">
+                                <div class="thermal-image" id="rightThermal" style="--peak-color: #f59e0b;"></div>
+                                <span class="thermal-label">Правая грудь</span>
+                                <span class="temp-value" id="rightTemp">37.2°C</span>
+                            </div>
+                        </div>
+                        <div class="temp-legend">
+                            <span class="legend-label">34°C</span>
+                            <div class="legend-gradient"></div>
+                            <span class="legend-label">39°C+</span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Текущие показатели</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">Средняя температура</div>
+                                <div class="metric-value" id="avgTemp">36.8°C</div>
+                                <div class="metric-subtitle">В пределах нормы</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Асимметрия</div>
+                                <div class="metric-value elevated" id="asymmetryValue">+0.8°C</div>
+                                <div class="metric-subtitle">Незначительное отклонение</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Уровень риска</div>
+                                <div class="risk-indicator elevated" id="riskIndicator">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    ПОВЫШЕННЫЙ
+                                </div>
+                                <div class="metric-subtitle">Рекомендуется наблюдение</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="card full-width">
+                        <div class="card-header">
+                            <h2 class="card-title">История температуры (30 дней)</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="tempChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Input Page -->
+            <section id="page-input" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Ручной ввод температур</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                        Введите показания температуры для каждой из 8 зон измерения или выберите сценарий
+                    </p>
+                    
+                    <!-- Scenario Buttons -->
+                    <div class="scenario-buttons">
+                        <button class="btn btn-scenario btn-healthy" id="scenarioHealthy">
+                            <i class="fas fa-heart"></i>
+                            Здоровый сценарий
+                        </button>
+                        <button class="btn btn-scenario btn-elevated" id="scenarioElevated">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Повышенный риск
+                        </button>
+                        <button class="btn btn-scenario btn-sick" id="scenarioSick">
+                            <i class="fas fa-heartbeat"></i>
+                            Высокий риск
+                        </button>
+                        <button class="btn btn-scenario btn-random" id="scenarioRandom">
+                            <i class="fas fa-dice"></i>
+                            Случайный
+                        </button>
+                    </div>
+                    
+                    <div class="input-section">
+                        <!-- Left Breast -->
+                        <h4 style="color: var(--accent-primary); margin-bottom: 12px;">🔵 Левая грудь (L1-L4)</h4>
+                        <div class="temp-inputs-grid">
+                            <div class="input-group">
+                                <label class="input-label">L1 (верхняя внутр.)</label>
+                                <input type="number" class="temp-input" id="zone1" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">L2 (верхняя внешн.)</label>
+                                <input type="number" class="temp-input" id="zone2" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">L3 (нижняя внутр.)</label>
+                                <input type="number" class="temp-input" id="zone3" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">L4 (нижняя внешн.)</label>
+                                <input type="number" class="temp-input" id="zone4" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                        </div>
+
+                        <!-- Right Breast -->
+                        <h4 style="color: var(--accent-secondary); margin: 24px 0 12px;">🟣 Правая грудь (R1-R4)</h4>
+                        <div class="temp-inputs-grid">
+                            <div class="input-group">
+                                <label class="input-label">R1 (верхняя внутр.)</label>
+                                <input type="number" class="temp-input" id="zone5" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">R2 (верхняя внешн.)</label>
+                                <input type="number" class="temp-input" id="zone6" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">R3 (нижняя внутр.)</label>
+                                <input type="number" class="temp-input" id="zone7" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">R4 (нижняя внешн.)</label>
+                                <input type="number" class="temp-input" id="zone8" placeholder="36.5" step="0.1" min="30" max="45">
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="submitTemps">
+                                <i class="fas fa-paper-plane"></i>
+                                Отправить на анализ
+                            </button>
+                            <button class="btn btn-secondary" id="clearInputs">
+                                <i class="fas fa-eraser"></i>
+                                Очистить
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-result" id="manualAnalysisResult" style="display: none;">
+                        <div class="analysis-header">
+                            <div class="analysis-icon normal"><i class="fas fa-check-circle"></i></div>
+                            <h3 class="analysis-title">Результат анализа</h3>
+                        </div>
+                        <p class="analysis-text" id="analysisText"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upload Page -->
+            <section id="page-upload" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Загрузка термограммы</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                        Загрузите инфракрасное изображение для автоматического анализа температурных зон
+                    </p>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <p class="upload-text">Перетащите файл сюда или нажмите для выбора</p>
+                        <p class="upload-hint">Поддерживаемые форматы: JPG, PNG, DICOM</p>
+                        <div class="upload-formats">
+                            <span class="format-tag">jpg</span>
+                            <span class="format-tag">png</span>
+                            <span class="format-tag">dicom</span>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    </div>
+
+                    <div id="uploadPreview" style="display: none; margin-top: 24px;">
+                        <div class="card-header">
+                            <h3 class="card-title">Загруженное изображение</h3>
+                        </div>
+                        <img id="previewImage" style="max-width: 100%; border-radius: var(--border-radius); margin-bottom: 16px;">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="analyzeImage">
+                                <i class="fas fa-search-plus"></i>
+                                Анализировать
+                            </button>
+                            <button class="btn btn-secondary" id="cancelUpload">
+                                <i class="fas fa-times"></i>
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-result" id="imageAnalysisResult" style="display: none; margin-top: 24px;">
+                        <div class="analysis-header">
+                            <div class="analysis-icon" id="imageAnalysisIcon"><i class="fas fa-robot"></i></div>
+                            <h3 class="analysis-title">AI Анализ изображения</h3>
+                        </div>
+                        <p class="analysis-text" id="imageAnalysisText"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Page -->
+            <section id="page-history" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">История измерений</h2>
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Левая (°C)</th>
+                                <th>Правая (°C)</th>
+                                <th>Асимметрия</th>
+                                <th>Риск</th>
+                                <th>Источник</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Analysis Page -->
+            <section id="page-analysis" class="page">
+                <div class="dashboard-grid">
+                    <div class="card full-width">
+                        <div class="card-header">
+                            <h2 class="card-title">AI Заключение</h2>
+                        </div>
+                        <div class="analysis-result" style="background: transparent; border: none; padding: 0;">
+                            <div class="analysis-header">
+                                <div class="analysis-icon elevated"><i class="fas fa-brain"></i></div>
+                                <h3 class="analysis-title">Интеллектуальный анализ данных</h3>
+                            </div>
+                            <p class="analysis-text" id="aiConclusion">
+                                На основании последних измерений система выявила незначительную температурную асимметрию (+0.8°C) между левой и правой молочными железами. Средняя температура находится в пределах физиологической нормы (36.8°C).
+                                <br><br>
+                                Выявленная асимметрия может быть связана с естественными колебаниями температуры тела, физической активностью или внешними факторами. Рекомендуется повторить измерение через 24-48 часов для подтверждения стабильности показателей.
+                                <br><br>
+                                <strong>Важно:</strong> Данная система является вспомогательным инструментом мониторинга и не заменяет консультацию врача-маммолога. При сохранении асимметрии в течение нескольких дней рекомендуется обратиться к специалисту.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Page -->
+            <section id="page-settings" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Настройки</h2>
+                    </div>
+                    <div class="input-section">
+                        <div class="input-group" style="max-width: 400px; margin-bottom: 16px;">
+                            <label class="input-label">API URL сервера</label>
+                            <input type="text" class="temp-input" id="apiUrl" value="http://localhost:8000">
+                        </div>
+                        <div class="input-group" style="max-width: 400px; margin-bottom: 16px;">
+                            <label class="input-label">Порог асимметрии (°C)</label>
+                            <input type="number" class="temp-input" id="asymThreshold" value="0.5" step="0.1">
+                        </div>
+                        <button class="btn btn-primary" id="saveSettings">
+                            <i class="fas fa-save"></i>
+                            Сохранить настройки
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

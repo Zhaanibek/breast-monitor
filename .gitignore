@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.mypy_cache/
+
+# VS Code
+.vscode/
+
+# Environment variables
+.env
+
+# Database
+breast_monitor.db
+*.sqlite3
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# User uploads
+uploads/

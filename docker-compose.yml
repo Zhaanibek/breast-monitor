@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: breast_monitor_backend
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./breast_monitor.db
+    restart: unless-stopped
+
+  bot:
+    build: .
+    container_name: breast_monitor_bot
+    command: python telegram_bot/bot.py
+    volumes:
+      - .:/app
+    environment:
+      # Bot communicates with backend container via internal network
+      - API_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    env_file:
+      - .env
+
+# Network is created automatically by docker-compose
